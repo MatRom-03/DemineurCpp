@@ -16,11 +16,13 @@ struct Historique {
 
 struct Demineur {
 	unsigned int* puiPositionMines;
+	char* pcDemineur;
 	Historique hHistorique;
 	unsigned int uiNbMines;
 	unsigned int uiNbLignes;
 	unsigned int uiNbColonnes;
 	unsigned int uiNbCoups;
+	unsigned int uiNbCases;
 };
 
 void listeCommande()
@@ -41,10 +43,53 @@ void perdu()
 	exit(0);
 }
 
-void afficher(const Demineur& D)
+
+void construction(Demineur& D, unsigned int uiCommande)
+{
+	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
+	D.pcDemineur = new char[D.uiNbCases];
+	char aff = ' ';
+	unsigned int uiPosCases = 0;
+	for (unsigned int i = 0; i < D.uiNbLignes; i++)
+	{
+		for (unsigned int j = 0; j < D.uiNbColonnes; j++)
+		{
+			uiPosCases = i * D.uiNbColonnes + j;
+			for (unsigned int l = 0; l < D.uiNbMines; l++)
+			{
+				if (uiCommande == 0)
+				{
+					aff = '.';
+					D.pcDemineur[uiPosCases] = aff;
+				}
+				else if(uiCommande == 1)
+				{
+					if (D.puiPositionMines[l] == uiPosCases)
+					{
+						if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
+						{
+							aff = 'x';
+							D.pcDemineur[uiPosCases] = aff;
+						}
+						if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
+						{
+							perdu();
+						}
+					}
+				}
+			}
+			if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == uiPosCases)
+			{
+				aff = 'x';
+				D.pcDemineur[uiPosCases] = aff;
+			}			
+		}
+	}
+}
+
+void afficher(Demineur& D)
 {
 	system("CLS");
-	char aff = '.';
 	cout << D.uiNbLignes << " " << D.uiNbColonnes << endl;
 	for (unsigned int i = 0; i < D.uiNbLignes; i++)
 	{
@@ -55,26 +100,7 @@ void afficher(const Demineur& D)
 		cout << endl;
 		for (unsigned int k = 0; k < D.uiNbColonnes; k++)
 		{
-			aff = '.';
-			for (unsigned int l = 0; l < D.uiNbMines; l++)
-			{
-				if (D.puiPositionMines[l] == (i * D.uiNbColonnes + k))
-				{
-					if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
-					{
-						aff = 'x';
-					}
-					else
-					{
-						aff = 'm';
-					}
-					if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
-					{
-						perdu();
-					}
-				}
-			}
-			cout << "| " << aff << ' ';
+			cout << "| " << D.pcDemineur[i * D.uiNbColonnes + k] << ' ';
 		}
 		cout << "|" << endl;
 	}
@@ -193,6 +219,7 @@ void nouveau_coup(Demineur& D)
 				
 		}
 	}
+	construction(D, 1);
 	afficher(D);
 }
 
@@ -209,6 +236,7 @@ int main()
 		{
 		case 1:
 			probleme(D);
+			construction(D, 0);
 			break;
 		case 2:
 			grille(D);
@@ -222,12 +250,14 @@ int main()
 		case 5:
 			nouveau_coup(D);
 			break;
-		case 6: afficher(D);
+		case 6: 
+			afficher(D);
 			break;
 		default:
 			break;
 		}
 	}
 	delete[] D.puiPositionMines;
+	delete[] D.pcDemineur;
 	return 0;
 }
