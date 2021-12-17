@@ -7,6 +7,7 @@ using namespace std;
 #define uiTailleMax (unsigned int) 16
 #define demasquer (char)'D'
 #define marquer (char)'M'
+#define decouvert (char)' '
 
 
 struct Historique {
@@ -47,7 +48,6 @@ void perdu()
 void construction(Demineur& D, unsigned int uiCommande)
 {
 	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
-	D.pcDemineur = new char[D.uiNbCases];
 	char aff = ' ';
 	unsigned int uiPosCases = 0;
 	for (unsigned int i = 0; i < D.uiNbLignes; i++)
@@ -55,39 +55,80 @@ void construction(Demineur& D, unsigned int uiCommande)
 		for (unsigned int j = 0; j < D.uiNbColonnes; j++)
 		{
 			uiPosCases = i * D.uiNbColonnes + j;
-			for (unsigned int l = 0; l < D.uiNbMines; l++)
+			if (uiCommande == 0)
 			{
-				if (uiCommande == 0)
+				D.pcDemineur[uiPosCases] = '.';
+			}
+			if (D.pcDemineur[uiPosCases] != decouvert)
+			{
+				for (unsigned int l = 0; l < D.uiNbMines; l++)
 				{
-					aff = '.';
-					D.pcDemineur[uiPosCases] = aff;
-				}
-				else if(uiCommande == 1)
-				{
-					if (D.puiPositionMines[l] == uiPosCases)
+					if (uiCommande == 1)
 					{
-						if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
+						if (D.puiPositionMines[l] == uiPosCases)
 						{
-							aff = 'x';
-							D.pcDemineur[uiPosCases] = aff;
-						}
-						if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
-						{
-							perdu();
+							if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
+							{
+								D.pcDemineur[uiPosCases] = 'x';
+							}
+							if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
+							{
+								perdu();
+							}
 						}
 					}
 				}
+				if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == uiPosCases)
+				{
+					D.pcDemineur[uiPosCases] = 'x';
+				}
+				if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == uiPosCases)
+				{
+					D.pcDemineur[uiPosCases] = ' ';
+					int droite = 0, gauche = 0, haut = 0, bas = 0;
+					for (unsigned int l = 0; l < D.uiNbMines; l++)
+					{
+						int tmp1 = uiPosCases + 1;
+						if ((uiPosCases + 1) == D.puiPositionMines[l] && (uiPosCases + 1) > 0 && tmp1 > 0)
+						{
+							if(D.pcDemineur[uiPosCases + 1] != decouvert)
+								droite += 1;
+						}
+						int tmp2 = uiPosCases - 1;
+						if ((uiPosCases - 1) == D.puiPositionMines[l] && (uiPosCases - 1) > 0 && tmp2 > 0)
+						{
+							if(D.pcDemineur[uiPosCases - 1] != decouvert)
+								gauche += 1;
+						}
+						int tmp3 = uiPosCases + D.uiNbColonnes;
+						if ((uiPosCases + D.uiNbColonnes) == D.puiPositionMines[l] && (uiPosCases + D.uiNbColonnes) > 0 && tmp3 > 0)
+						{
+							if (D.pcDemineur[uiPosCases + D.uiNbColonnes] != decouvert)
+								bas += 1;
+						}
+						int tmp4 = uiPosCases - D.uiNbColonnes;
+						if ((uiPosCases - D.uiNbColonnes) == D.puiPositionMines[l] && tmp4 > 0)
+						{
+							if (D.pcDemineur[uiPosCases - D.uiNbColonnes] != decouvert)
+								haut += 1;
+						}
+					}
+					if (droite > 0)
+						D.pcDemineur[uiPosCases + 1] = ' ';
+					if (gauche > 0)
+						D.pcDemineur[uiPosCases - 1] = ' ';
+					if (bas > 0)
+						D.pcDemineur[uiPosCases + D.uiNbColonnes] = ' ';
+					if (haut > 0)
+						D.pcDemineur[uiPosCases - D.uiNbColonnes] = ' ';
+
+				}
 			}
-			if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == uiPosCases)
-			{
-				aff = 'x';
-				D.pcDemineur[uiPosCases] = aff;
-			}			
 		}
 	}
 }
 
-void afficher(Demineur& D)
+void afficher(const Demineur& D)
 {
 	system("CLS");
 	cout << D.uiNbLignes << " " << D.uiNbColonnes << endl;
@@ -163,6 +204,8 @@ void probleme(Demineur& D)
 		cout << D.puiPositionMines[i] << " ";
 	}
 	cout << endl;
+	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
+	D.pcDemineur = new char[D.uiNbCases];
 }
 
 void grille(Demineur& D)
