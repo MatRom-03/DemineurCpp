@@ -45,17 +45,24 @@ void construction(Demineur& D, unsigned int uiCommande)
 	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
 	char aff = ' ';
 	unsigned int uiPosCases = 0;
+	for (unsigned int i = 0; i < D.uiNbLignes; i++) 
+	{
+		for (unsigned int j = 0; j < D.uiNbColonnes; j++)
+		{
+			uiPosCases = i * D.uiNbColonnes + j;
+			if (uiCommande == 0)
+			{
+				D.pcDemineur[uiPosCases] = '.';
+			}
+		}
+	}
 	debut(D.CHistorique);
-	while(!estFin(D.CHistorique)){
+	while (!estFin(D.CHistorique)) {  
 		for (unsigned int i = 0; i < D.uiNbLignes; i++)
 		{
 			for (unsigned int j = 0; j < D.uiNbColonnes; j++)
 			{
 				uiPosCases = i * D.uiNbColonnes + j;
-				if (uiCommande == 0)
-				{
-					D.pcDemineur[uiPosCases] = '.';
-				}
 				if (D.pcDemineur[uiPosCases] != decouvert)
 				{
 					for (unsigned int l = 0; l < D.uiNbMines; l++)
@@ -88,13 +95,13 @@ void construction(Demineur& D, unsigned int uiCommande)
 							int tmp1 = uiPosCases + 1;
 							if ((uiPosCases + 1) == D.puiPositionMines[l] && (uiPosCases + 1) > 0 && tmp1 > 0)
 							{
-								if(D.pcDemineur[uiPosCases + 1] != decouvert)
+								if (D.pcDemineur[uiPosCases + 1] != decouvert)
 									droite += 1;
 							}
 							int tmp2 = uiPosCases - 1;
 							if ((uiPosCases - 1) == D.puiPositionMines[l] && (uiPosCases - 1) > 0 && tmp2 > 0)
 							{
-								if(D.pcDemineur[uiPosCases - 1] != decouvert)
+								if (D.pcDemineur[uiPosCases - 1] != decouvert)
 									gauche += 1;
 							}
 							int tmp3 = uiPosCases + D.uiNbColonnes;
@@ -164,14 +171,14 @@ void probleme(Demineur& D)
 			{
 				cout << "Nombre de mines trop grand pour le tableau" << endl;
 			}
-			if (D.uiNbColonnes > uiTailleMax)
-			{
-				cout << "Nombre de colonnes trop grande" << endl;
-			}
-			if (D.uiNbLignes > uiTailleMax)
-			{
-				cout << "Nombre de lignes trop grand" << endl;
-			}
+		if (D.uiNbColonnes > uiTailleMax)
+		{
+			cout << "Nombre de colonnes trop grande" << endl;
+		}
+		if (D.uiNbLignes > uiTailleMax)
+		{
+			cout << "Nombre de lignes trop grand" << endl;
+		}
 	}
 
 	// Allocation du tableau de position de mines
@@ -218,13 +225,25 @@ void grille(Demineur& D)
 		cin >> D.puiPositionMines[i];
 	}
 
+	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
+	D.pcDemineur = new char[D.uiNbCases];
+	construction(D, 0);
+
 	cin >> D.uiNbCoups;
 	for (unsigned int i = 0; i < D.uiNbCoups; i++)
 	{
-		cin >> cHistoriqueEntree;
-		Historique hTmp;
-		formater(hTmp, cHistoriqueEntree);
-		inserer(D.CHistorique, hTmp);
+		while (true)
+		{
+			cin >> cHistoriqueEntree;
+			if (cHistoriqueEntree[0] == demasquer || cHistoriqueEntree[0] == marquer)
+			{
+				Historique hTmp;
+				formater(hTmp, cHistoriqueEntree);
+				inserer(D.CHistorique, hTmp);
+				break;
+			}
+		}
+		construction(D, 1);
 	}
 	afficher(D);
 }
@@ -251,7 +270,7 @@ void nouveau_coup(Demineur& D)
 			Historique hTmp;
 			formater(hTmp, cHistoriqueEntree);
 			inserer(D.CHistorique, hTmp);
-			break;	
+			break;
 		}
 	}
 	construction(D, 1);
@@ -276,7 +295,7 @@ int main()
 			break;
 		case 2:
 			grille(D);
-			construction(D, 1);
+			
 			break;
 		case 3:
 			win();
@@ -287,7 +306,7 @@ int main()
 		case 5:
 			nouveau_coup(D);
 			break;
-		case 6: 
+		case 6:
 			afficher(D);
 			break;
 		default:
