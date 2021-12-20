@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include "Chaine.h"
 using namespace std;
 
 #pragma warning(disable : 4996)
@@ -9,16 +10,10 @@ using namespace std;
 #define marquer (char)'M'
 #define decouvert (char)' '
 
-
-struct Historique {
-	char cCommande;
-	unsigned int uiPosition;
-};
-
 struct Demineur {
 	unsigned int* puiPositionMines;
 	char* pcDemineur;
-	Historique hHistorique;
+	Chaine CHistorique;
 	unsigned int uiNbMines;
 	unsigned int uiNbLignes;
 	unsigned int uiNbColonnes;
@@ -50,87 +45,91 @@ void construction(Demineur& D, unsigned int uiCommande)
 	D.uiNbCases = D.uiNbColonnes * D.uiNbLignes;
 	char aff = ' ';
 	unsigned int uiPosCases = 0;
-	for (unsigned int i = 0; i < D.uiNbLignes; i++)
-	{
-		for (unsigned int j = 0; j < D.uiNbColonnes; j++)
+	debut(D.CHistorique);
+	while(!estFin(D.CHistorique)){
+		for (unsigned int i = 0; i < D.uiNbLignes; i++)
 		{
-			uiPosCases = i * D.uiNbColonnes + j;
-			if (uiCommande == 0)
+			for (unsigned int j = 0; j < D.uiNbColonnes; j++)
 			{
-				D.pcDemineur[uiPosCases] = '.';
-			}
-			if (D.pcDemineur[uiPosCases] != decouvert)
-			{
-				for (unsigned int l = 0; l < D.uiNbMines; l++)
+				uiPosCases = i * D.uiNbColonnes + j;
+				if (uiCommande == 0)
 				{
-					if (uiCommande == 1)
-					{
-						if (D.puiPositionMines[l] == uiPosCases)
-						{
-							if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
-							{
-								D.pcDemineur[uiPosCases] = 'x';
-							}
-							if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == D.puiPositionMines[l])
-							{
-								perdu();
-							}
-						}
-					}
+					D.pcDemineur[uiPosCases] = '.';
 				}
-				if (D.hHistorique.cCommande == marquer && D.hHistorique.uiPosition == uiPosCases)
+				if (D.pcDemineur[uiPosCases] != decouvert)
 				{
-					D.pcDemineur[uiPosCases] = 'x';
-				}
-				if (D.hHistorique.cCommande == demasquer && D.hHistorique.uiPosition == uiPosCases)
-				{
-					D.pcDemineur[uiPosCases] = ' ';
-					int droite = 0, gauche = 0, haut = 0, bas = 0;
 					for (unsigned int l = 0; l < D.uiNbMines; l++)
 					{
-						int tmp1 = uiPosCases + 1;
-						if ((uiPosCases + 1) == D.puiPositionMines[l] && (uiPosCases + 1) > 0 && tmp1 > 0)
+						if (uiCommande == 1)
 						{
-							if(D.pcDemineur[uiPosCases + 1] != decouvert)
-								droite += 1;
-						}
-						int tmp2 = uiPosCases - 1;
-						if ((uiPosCases - 1) == D.puiPositionMines[l] && (uiPosCases - 1) > 0 && tmp2 > 0)
-						{
-							if(D.pcDemineur[uiPosCases - 1] != decouvert)
-								gauche += 1;
-						}
-						int tmp3 = uiPosCases + D.uiNbColonnes;
-						if ((uiPosCases + D.uiNbColonnes) == D.puiPositionMines[l] && (uiPosCases + D.uiNbColonnes) > 0 && tmp3 > 0)
-						{
-							if (D.pcDemineur[uiPosCases + D.uiNbColonnes] != decouvert)
-								bas += 1;
-						}
-						int tmp4 = uiPosCases - D.uiNbColonnes;
-						if ((uiPosCases - D.uiNbColonnes) == D.puiPositionMines[l] && tmp4 > 0)
-						{
-							if (D.pcDemineur[uiPosCases - D.uiNbColonnes] != decouvert)
-								haut += 1;
+							if (D.puiPositionMines[l] == uiPosCases)
+							{
+								if (lire(D.CHistorique).cCommande == marquer && lire(D.CHistorique).uiPosition == D.puiPositionMines[l])
+								{
+									D.pcDemineur[uiPosCases] = 'x';
+								}
+								if (lire(D.CHistorique).cCommande == demasquer && lire(D.CHistorique).uiPosition == D.puiPositionMines[l])
+								{
+									perdu();
+								}
+							}
 						}
 					}
-					if (droite > 0)
-						D.pcDemineur[uiPosCases + 1] = ' ';
-					if (gauche > 0)
-						D.pcDemineur[uiPosCases - 1] = ' ';
-					if (bas > 0)
-						D.pcDemineur[uiPosCases + D.uiNbColonnes] = ' ';
-					if (haut > 0)
-						D.pcDemineur[uiPosCases - D.uiNbColonnes] = ' ';
+					if (lire(D.CHistorique).cCommande == marquer && lire(D.CHistorique).uiPosition == uiPosCases)
+					{
+						D.pcDemineur[uiPosCases] = 'x';
+					}
+					if (lire(D.CHistorique).cCommande == demasquer && lire(D.CHistorique).uiPosition == uiPosCases)
+					{
+						D.pcDemineur[uiPosCases] = ' ';
+						int droite = 0, gauche = 0, haut = 0, bas = 0;
+						for (unsigned int l = 0; l < D.uiNbMines; l++)
+						{
+							int tmp1 = uiPosCases + 1;
+							if ((uiPosCases + 1) == D.puiPositionMines[l] && (uiPosCases + 1) > 0 && tmp1 > 0)
+							{
+								if(D.pcDemineur[uiPosCases + 1] != decouvert)
+									droite += 1;
+							}
+							int tmp2 = uiPosCases - 1;
+							if ((uiPosCases - 1) == D.puiPositionMines[l] && (uiPosCases - 1) > 0 && tmp2 > 0)
+							{
+								if(D.pcDemineur[uiPosCases - 1] != decouvert)
+									gauche += 1;
+							}
+							int tmp3 = uiPosCases + D.uiNbColonnes;
+							if ((uiPosCases + D.uiNbColonnes) == D.puiPositionMines[l] && (uiPosCases + D.uiNbColonnes) > 0 && tmp3 > 0)
+							{
+								if (D.pcDemineur[uiPosCases + D.uiNbColonnes] != decouvert)
+									bas += 1;
+							}
+							int tmp4 = uiPosCases - D.uiNbColonnes;
+							if ((uiPosCases - D.uiNbColonnes) == D.puiPositionMines[l] && tmp4 > 0)
+							{
+								if (D.pcDemineur[uiPosCases - D.uiNbColonnes] != decouvert)
+									haut += 1;
+							}
+						}
+						if (droite > 0)
+							D.pcDemineur[uiPosCases + 1] = ' ';
+						if (gauche > 0)
+							D.pcDemineur[uiPosCases - 1] = ' ';
+						if (bas > 0)
+							D.pcDemineur[uiPosCases + D.uiNbColonnes] = ' ';
+						if (haut > 0)
+							D.pcDemineur[uiPosCases - D.uiNbColonnes] = ' ';
 
+					}
 				}
-			}
-		}
-	}
-}
+			} //endfor
+		} //endfor
+		suivant(D.CHistorique);
+	} //endwhile
+}//endfunction
 
 void afficher(const Demineur& D)
 {
-	system("CLS");
+	//system("CLS");
 	cout << D.uiNbLignes << " " << D.uiNbColonnes << endl;
 	for (unsigned int i = 0; i < D.uiNbLignes; i++)
 	{
@@ -223,12 +222,9 @@ void grille(Demineur& D)
 	for (unsigned int i = 0; i < D.uiNbCoups; i++)
 	{
 		cin >> cHistoriqueEntree;
-		D.hHistorique.cCommande = cHistoriqueEntree[0];
-		for (int i = 0; i < 2; i++)
-		{
-			cHistoriqueTransition[i] = cHistoriqueEntree[i + 1];
-		}
-		D.hHistorique.uiPosition = atoi(cHistoriqueTransition);
+		Historique hTmp;
+		formater(hTmp, cHistoriqueEntree);
+		inserer(D.CHistorique, hTmp);
 	}
 	afficher(D);
 }
@@ -250,16 +246,12 @@ void nouveau_coup(Demineur& D)
 	while (true)
 	{
 		cin >> cHistoriqueEntree;
-		for (int i = 0; i < 2; i++)
-		{
-			cHistoriqueTransition[i] = cHistoriqueEntree[i + 1];
-		}
 		if (cHistoriqueEntree[0] == demasquer || cHistoriqueEntree[0] == marquer)
 		{
-			D.hHistorique.cCommande = cHistoriqueEntree[0];
-			D.hHistorique.uiPosition = atoi(cHistoriqueTransition);
-			break;
-				
+			Historique hTmp;
+			formater(hTmp, cHistoriqueEntree);
+			inserer(D.CHistorique, hTmp);
+			break;	
 		}
 	}
 	construction(D, 1);
@@ -269,6 +261,7 @@ void nouveau_coup(Demineur& D)
 int main()
 {
 	Demineur D;
+	initialiser(D.CHistorique);
 	srand((unsigned int)time(NULL));
 	unsigned int commande = 0;
 	listeCommande();
@@ -283,6 +276,7 @@ int main()
 			break;
 		case 2:
 			grille(D);
+			construction(D, 1);
 			break;
 		case 3:
 			win();
